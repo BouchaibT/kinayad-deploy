@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinayad — Prise de RDV & rappels WhatsApp pour cabinets santé & beauté au Maroc</title>
+<meta name="description" content="Automatisez vos rendez-vous et réduisez les no-shows grâce à des rappels WhatsApp automatiques en français, arabe et darija. Dès 299 MAD/mois.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a2e1f;
+    --ink-soft:#3d5243;
+    --cream:#f6f2e7;
+    --cream-2:#efe9d8;
+    --green:#1f6e43;
+    --green-deep:#12462b;
+    --gold:#c7923d;
+    --gold-soft:#e6c584;
+    --white:#fffdf7;
+    --sand:#e8e0cc;
+    --radius:18px;
+    --shadow:0 18px 40px -18px rgba(18,70,43,.35);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Manrope',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 500px at 100% -10%, rgba(199,146,61,.16), transparent 60%),
+      radial-gradient(900px 400px at -10% 10%, rgba(31,110,67,.12), transparent 55%),
+      var(--cream);
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--gold);color:var(--ink-deep,#0f1f15)}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(246,242,231,.82);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid rgba(31,110,67,.14);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+  .brand{display:flex;align-items:center;gap:12px;font-family:'Fraunces',serif;font-weight:900;font-size:1.35rem}
+  .brand .mark{
+    display:grid;place-items:center;width:42px;height:42px;border-radius:12px;
+    background:linear-gradient(135deg,var(--green),var(--green-deep));
+    color:var(--gold-soft);font-size:1.2rem;box-shadow:var(--shadow);
+  }
+  .nav-links{display:flex;gap:28px;align-items:center}
+  .nav-links a{text-decoration:none;color:var(--ink-soft);font-weight:600;font-size:.95rem}
+  .nav-links a:hover{color:var(--green)}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+    background:var(--green-deep);color:var(--white);font-weight:700;font-size:.95rem;
+    padding:12px 22px;border-radius:999px;transition:.25s;
+  }
+  .btn:hover{transform:translateY(-2px);background:var(--green)}
+  .btn-gold{background:var(--gold);color:var(--ink-deep,#102417)}
+  .btn-gold:hover{background:var(--gold-soft)}
+  .btn-ghost{background:transparent;color:var(--ink);border:2px solid var(--ink);padding:10px 20px}
+  .btn-ghost:hover{background:var(--ink);color:var(--cream)}
+
+  /* ---------- HERO ---------- */
+  header.hero{position:relative;padding:74px 0 70px}
+  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(31,110,67,.1);color:var(--green-deep);
+    font-weight:800;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;
+    padding:8px 16px;border-radius:999px;margin-bottom:20px;
+  }
+  h1{
+    font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2.4rem,5vw,4rem);
+    line-height:1.04;letter-spacing:-.02em;margin-bottom:22px;
+  }
+  h1 .accent{color:var(--green);position:relative;white-space:nowrap}
+  h1 .accent::after{content:"";position:absolute;left:0;right:0;bottom:.05em;height:.18em;background:var(--gold);z-index:-1;opacity:.5}
+  .lead{font-size:1.15rem;color:var(--ink-soft);max-width:46ch;margin-bottom:30px}
+  .hero-cta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:34px}
+  .proof{display:flex;gap:30px;flex-wrap:wrap;font-size:.88rem;color:var(--ink-soft)}
+  .proof b{display:block;font-family:'Fraunces',serif;font-size:1.4rem;color:var(--green-deep)}
+  .proof span{font-weight:600}
+
+  .hero-visual{position:relative}
+  .phone{
+    background:var(--white);border-radius:30px;padding:20px 14px;
+    box-shadow:var(--shadow),0 0 0 1px rgba(31,110,67,.08);
+    max-width:320px;margin-left:auto;position:relative;
+    animation:float 6s ease-in-out infinite;
+  }
+  .phone-bar{height:6px;width:120px;background:var(--sand);border-radius:99px;margin:0 auto 18px}
+  .msg{
+    background:var(--cream-2);border-radius:16px;padding:12px 14px;margin-bottom:12px;font-size:.86rem;
+    animation:rise .6s both;
+  }
+  .msg.out{background:var(--green-deep);color:var(--white);border-bottom-right-radius:4px;margin-left:16%}
+  .msg.in{background:var(--cream);border:1px solid var(--sand);border-bottom-left-radius:4px;margin-right:12%}
+  .msg .t{display:block;font-weight:800;margin-bottom:3px;color:var(--gold)}
+  .msg.out .t{color:var(--gold-soft)}
+  .msg small{display:block;margin-top:5px;opacity:.7;font-size:.72rem}
+  .chip{
+    display:inline-block;background:var(--green);color:var(--white);
+    font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:99px;margin-top:4px;
+  }
+  .float-note{
+    position:absolute;bottom:-18px;left:-24px;background:var(--gold);color:var(--ink-deep,#102417);
+    font-weight:800;font-size:.85rem;padding:12px 18px;border-radius:14px;box-shadow:var(--shadow);
+    animation:rise .7s .3s both;
+  }
+
+  /* ---------- PROBLEME ---------- */
+  .section{padding:70px 0}
+  .band-grey{background:var(--cream-2)}
+  .label{
+    font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;color:var(--green);
+    margin-bottom:14px;
+  }
+  h2{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.9rem,3.6vw,2.7rem);line-height:1.12;margin-bottom:18px}
+  .sub{color:var(--ink-soft);font-size:1.05rem;max-width:60ch;margin-bottom:34px}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .card{
+    background:var(--white);border-radius:var(--radius);padding:28px;
+    box-shadow:0 10px 30px -18px rgba(18,70,43,.25);border:1px solid rgba(31,110,67,.1);
+  }
+  .stat-num{font-family:'Fraunces',serif;font-weight:900;font-size:2.6rem;color:var(--green);line-height:1}
+  .card h3{font-size:1.05rem;margin:10px 0 8px;font-weight:800}
+  .card p{font-size:.92rem;color:var(--ink-soft)}
+
+  /* ---------- COMMENT ÇA MARCHE ---------- */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;counter-reset:step}
+  .step{
+    position:relative;background:var(--white);border-radius:var(--radius);padding:54px 22px 24px;
+    border:1px solid rgba(31,110,67,.1);box-shadow:0 10px 26px -18px rgba(18,70,43,.2);
+  }
+  .step::before{
+    counter-increment:step;content:"0" counter(step);
+    position:absolute;top:16px;right:20px;font-family:'Fraunces',serif;
+    font-weight:900;font-size:2.2rem;color:var(--gold);opacity:.55;
+  }
+  .step .ico{font-size:1.8rem;margin-bottom:14px}
+  .step h3{font-size:1.02rem;font-weight:800;margin-bottom:8px}
+  .step p{font-size:.88rem;color:var(--ink-soft)}
+
+  /* ---------- OFFERS ---------- */
+  .pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:start}
+  .plan{
+    background:var(--white);border-radius:22px;padding:30px;border:1px solid rgba(31,110,67,.12);
+    position:relative;transition:.3s;
+  }
+  .plan:hover{transform:translateY(-6px);box-shadow:var(--shadow)}
+  .plan.popular{
+    border:2px solid var(--green);box-shadow:var(--shadow);
+    transform:scale(1.03);
+  }
+  .plan.popular:hover{transform:scale(1.03) translateY(-6px)}
+  .badge-pop{
+    position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+    background:var(--green-deep);color:var(--gold-soft);font-weight:800;font-size:.75rem;
+    padding:6px 16px;border-radius:99px;letter-spacing:.04em;
+  }
+  .plan h3{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:900;margin-bottom:4px}
+  .price{font-family:'Fraunces',serif;font-size:2.3rem;font-weight:900;color:var(--green-deep);margin:12px 0 2px}
+  .price small{font-size:.95rem;font-weight:600;color:var(--ink-soft)}
+  .plan .per{font-size:.8rem;color:var(--ink-soft);margin-bottom:18px}
+  .plan ul{list-style:none;display:grid;gap:10px;margin:18px 0 24px}
+  .plan li{font-size:.9rem;display:flex;gap:10px;align-items:flex-start}
+  .plan li::before{content:"✓";color:var(--green);font-weight:800;flex-shrink:0}
+  .plan .btn{width:100%;justify-content:center}
+
+  /* ---------- CTA / FORM ---------- */
+  .cta{
+    background:linear-gradient(135deg,var(--green-deep),var(--green));
+    color:var(--white);border-radius:26px;padding:56px 40px;position:relative;overflow:hidden;
+  }
+  .cta::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(230,197,132,.16)}
+  .cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:44px;position:relative;z-index:2}
+  .cta h2{color:var(--white)}
+  .cta .sub{color:rgba(255,255,255,.85)}
+  .cta-points{display:grid;gap:12px;margin-top:22px;font-size:.95rem}
+  .cta-points div{display:flex;gap:10px;align-items:center}
+  .cta-points div::before{content:"✓";color:var(--gold-soft);font-weight:800;background:rgba(230,197,132,.16);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex-shrink:0}
+
+  form{display:grid;gap:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);padding:26px;border-radius:18px}
+  form label{font-size:.82rem;font-weight:700;opacity:.9}
+  form input,form select{
+    width:100%;padding:13px 15px;border-radius:12px;border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.95);color:var(--ink);font-family:inherit;font-size:.95rem;
+  }
+  form select{appearance:none}
+  form input:focus,form select:focus{outline:2px solid var(--gold-soft)}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .btn-submit{background:var(--gold);border:none;color:var(--ink-deep,#102417);font-weight:800;padding:15px;border-radius:12px;font-family:inherit;font-size:1rem;cursor:pointer;transition:.25s}
+  .btn-submit:hover{background:var(--gold-soft)}
+  .form-note{font-size:.78rem;opacity:.75;text-align:center}
+
+  /* ---------- FOOTER / BRANDING ---------- */
+  footer{background:var(--ink-deep,#12462b);color:rgba(255,255,255,.8);padding:44px 0;margin-top:40px}
+  .foot-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+  footer .brand{color:var(--white)}
+  .foot-links{display:flex;gap:24px}
+  .foot-links a{color:rgba(255,255,255,.75);text-decoration:none;font-size:.9rem}
+  .foot-links a:hover{color:var(--gold-soft)}
+
+  /* ---------- ANIM ---------- */
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:900px){
+    .hero-grid,.cta-grid{grid-template-columns:1fr}
+    .hero-visual{margin-top:30px}
+    .stat-grid,.pricing,.steps{grid-template-columns:1fr}
+    .plan.popular{transform:none}
+    .nav-links{display:none}
+    .form-row{grid-template-columns:1fr}
+    .float-note{left:0}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="mark">ك</span> Kinayad</div>
+    <div class="nav-links">
+      <a href="#probleme">Le problème</a>
+      <a href="#comment">Comment ça marche</a>
+      <a href="#offres">Offres</a>
+      <a href="#demo">Démo</a>
+    </div>
+    <a class="btn" href="#demo">Réserver une démo</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-text">
+      <span class="eyebrow">✦ WhatsApp Business API · Maroc 🇲🇦</span>
+      <h1>Vos rendez-vous, <span class="accent">réservés et rappelés</span> tout seuls sur WhatsApp</h1>
+      <p class="lead">Kinayad automatise vos prises de rendez-vous et envoie des rappels automatiques en français, arabe et darija. Les patients confirment en un message — et vos créneaux perdus disparaissent.</p>
+      <div class="hero-cta">
+        <a class="btn btn-gold" href="#demo">Démarrer en 24h →</a>
+        <a class="btn btn-ghost" href="#offres">Voir les tarifs</a>
+      </div>
+      <div class="proof">
+        <div><b>−60%</b><span>de rendez-vous manqués*</span></div>
+        <div><b>24h</b><span>de mise en place</span></div>
+        <div><b>100%</b><span>sur WhatsApp, le canal n°1 au Maroc</span></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="phone">
+        <div class="phone-bar"></div>
+        <div class="msg in">Salam docteur 🌿 J'aimerais prendre rendez-vous demain si possible ?</div>
+        <div class="msg out"><span class="t">Kinayad · Bot</span>Bien sûr ! Voici les créneaux disponibles pour demain. Choisissez sur la grille 👇</div>
+        <div class="msg in"><span class="chip">Lundi 10h00</span> <span class="chip">Lundi 11h30</span> <span class="chip">Mardi 09h00</span></div>
+        <div class="msg out"><span class="t">Confirmation ✅</span>RDV confirmé : Lundi 10h00.<small>Un rappel vous sera envoyé 24h et 2h avant.</small></div>
+      </div>
+      <div class="float-note">🙌 No-show réduit jusqu'à −80%</div>
+    </div>
+  </div>
+</header>
+
+<section id="probleme" class="section band-grey">
+  <div class="wrap">
+    <span class="label reveal">Le vrai coût caché</span>
+    <h2 class="reveal">Chaque patient qui ne vient pas, c'est de l'argent perdu.</h2>
+    <p class="sub reveal">Dans les cabinets médicaux et salons de beauté au Maroc, les rendez-vous manqués coûtent temps, revenu et organisation.</p>
+    <div class="stat-grid reveal">
+      <div class="card">
+        <div class="stat-num">10-20%</div>
+        <h3>Taux de no-show</h3>
+        <p>Part des rendez-vous manqués dans les cabinets de soins. Un seul message de rappel les fait chuter de 40 à 80%.</p>
+      </div>
+      <div class="card">
+        <div class="stat-num">24h + 2h</div>
+        <h3>La fenêtre magique</h3>
+        <p>Deux rappels automatiques, juste avant le RDV. Le patient confirme, reporte ou annule — sans même décrocher le téléphone.</p>
+      </div>
+      <div class="card">
+        <div class="stat-num">&gt;90%</div>
+        <h3>Pénétration WhatsApp</h3>
+        <p>Le canal n°1 utilisé par 25 millions de Marocains. Vos patients y sont déjà — l'adoption est immédiate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="comment" class="section">
+  <div class="wrap">
+    <span class="label reveal">Comment ça marche</span>
+    <h2 class="reveal">Simple pour vos patients, invisible pour vous.</h2>
+    <p class="sub reveal">Kinayad se connecte à votre numéro WhatsApp et à votre agenda. Vous gardez le contrôle, nous supprimons la friction.</p>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="ico">🩺</div>
+        <h3>Connectez votre agenda</h3>
+        <p>Google Agenda, Outlook ou votre logiciel — on synchronise en 10 minutes.</p>
+      </div>
+      <div class="step">
+        <div class="ico">💬</div>
+        <h3>Soyez trouvé sur WhatsApp</h3>
+        <p>Votre lien de RDV est dans votre bio, votre site et votre fiche Google Maps.</p>
+      </div>
+      <div class="step">
+        <div class="ico">⚡</div>
+        <h3>Rappels automatiques</h3>
+        <p>Messages envoyés 24h et 2h avant. Confirmation ou annulation en un clic.</p>
+      </div>
+      <div class="step">
+        <div class="ico">📊</div>
+        <h3>Pilotez vos statistiques</h3>
+        <p>Suivez vos taux de no-show et de remplissage dans votre <a href="/dashboard" style="color:inherit">tableau de bord</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="offres" class="section band-grey">
+  <div class="wrap">
+    <span class="label reveal">Tarifs transparents</span>
+    <h2 class="reveal">Une offre pour chaque cabinet.</h2>
+    <p class="sub reveal">Pas d'engagement caché, sans frais d'installation. Annulez quand vous voulez.</p>
+    <div class="pricing reveal">
+      <div class="plan">
+        <h3>Starter</h3>
+        <div class="price">299<small> MAD</small></div>
+        <div class="per">/mois · ~28 €</div>
+        <ul>
+          <li>1 numéro WhatsApp Business</li>
+          <li>Lien de prise de RDV en ligne</li>
+          <li>Rappel automatique 24h avant</li>
+          <li>Confirmation / annulation par message</li>
+          <li>Support par WhatsApp</li>
+        </ul>
+        <a class="btn btn-ghost" href="#demo">Choisir Starter</a>
+      </div>
+
+      <div class="plan popular">
+        <div class="badge-pop">✨ LE PLUS CHOISI</div>
+        <h3>Pro</h3>
+        <div class="price">599<small> MAD</small></div>
+        <div class="per">/mois · ~55 €</div>
+        <ul>
+          <li>Tout le Starter, plus</li>
+          <li>Double rappel 24h + 2h avant</li>
+          <li>FAQ automatisée (horaires, adresse, tarifs)</li>
+          <li>Relance automatique des no-show</li>
+          <li>Tableau de bord & statistiques</li>
+        </ul>
+        <a class="btn" href="#demo">Choisir Pro</a>
+      </div>
+
+      <div class="plan">
+        <h3>Premium</h3>
+        <div class="price">999<small> MAD</small></div>
+        <div class="per">/mois · ~92 €</div>
+        <ul>
+          <li>Tout le Pro, plus</li>
+          <li>IA conversationnelle FR / AR / Darija</li>
+          <li>Multi-agendas & multi-lignes</li>
+          <li>Intégration Google Agenda / Outlook</li>
+          <li>Marque blanche & configurateur avancé</li>
+        </ul>
+        <a class="btn btn-ghost" href="#demo">Choisir Premium</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="demo" class="section">
+  <div class="wrap">
+    <div class="cta reveal">
+      <div class="cta-grid">
+        <div>
+          <span class="eyebrow" style="background:rgba(230,197,132,.2);color:var(--gold-soft)">Démo gratuite & sans engagement</span>
+          <h2>Votre cabinet a perdu combien de rendez-vous ce mois-ci ?</h2>
+          <p class="sub">Rejoignez les praticiens qui ont rempli leurs créneaux avec Kinayad. Nous vous accompagnons et mettons en place votre assistant en moins de 24h.</p>
+          <div class="cta-points">
+            <div>Découvrez concrètement le parcours patient</div>
+            <div>Estimation personnalisée d'économies</div>
+            <div>Mise en place assistée gratuitement</div>
+            <div>Encaissez en MAD ou EUR · TVA non applicable</div>
+          </div>
+        </div>
+        <form id="leadForm" action="#" onsubmit="return submitLead(event)">
+          <label for="nom">Nom & prénom</label>
+          <input id="nom" name="nom" type="text" placeholder="Dr. Amine Bennani" required>
+          <div class="form-row">
+            <div>
+              <label for="type">Type d'établissement</label>
+              <select id="type" name="type">
+                <option>Cabinet médical</option>
+                <option>Cabinet dentaire</option>
+                <option>Pharmacie</option>
+                <option>Salon de beauté / Institut</option>
+                <option>Autre</option>
+              </select>
+            </div>
+            <div>
+              <label for="ville">Ville</label>
+              <select id="ville" name="ville">
+                <option>Casablanca</option>
+                <option>Rabat</option>
+                <option>Marrakech</option>
+                <option>Fès</option>
+                <option>Tanger</option>
+                <option>Autre</option>
+              </select>
+            </div>
+          </div>
+          <label for="tel">Numéro WhatsApp</label>
+          <input id="tel" name="tel" type="tel" placeholder="+212 6 XX XX XX XX" required>
+          <button class="btn-submit" type="submit">Réserver ma démo gratuite →</button>
+          <p class="form-note">En envoyant, vous acceptez d'être recontacté sur WhatsApp. Vos données restent privées.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-inner">
+    <div class="brand"><span class="mark">ك</span> Kinayad</div>
+    <div class="foot-links">
+      <a href="#probleme">Le problème</a>
+      <a href="#offres">Offres</a>
+      <a href="#demo">Démo</a>
+      <a href="/dashboard">Tableau de bord</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})
+  },{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // Stagger hero phone messages on load
+  document.querySelectorAll('.msg').forEach((m,i)=>{m.style.animationDelay=(.15+.18*i)+'s'});
+
+  // Form submit → WhatsApp message (placeholder — remplacez YOUR_NUMBER par le vrai numéro WhatsApp Business, format 2126XXXXXXXXX)
+  function submitLead(e){
+    const nom=document.getElementById('nom').value,
+          type=document.getElementById('type').value,
+          ville=document.getElementById('ville').value,
+          tel=document.getElementById('tel').value;
+    const txt=encodeURIComponent(
+      'Bonjour Kinayad 👋 Je suis '+nom+' ('+type+' - '+ville+').\nJe souhaite réserver une démo gratuite.\nMon WhatsApp : '+tel);
+    window.open('https://wa.me/YOUR_NUMBER?text='+txt,'_blank');
+    alert('Merci '+nom+' ! Ouverture de WhatsApp pour réserver votre démo ✅');
+    e.preventDefault();
+    return false;
+  }
+</script>
+
+</body>
+</html>

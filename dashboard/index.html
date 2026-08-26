@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinayad — Tableau de bord</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a2e1f;
+    --ink-soft:#3d5243;
+    --cream:#f6f2e7;
+    --cream-2:#efe9d8;
+    --green:#1f6e43;
+    --green-deep:#12462b;
+    --gold:#c7923d;
+    --gold-soft:#e6c584;
+    --white:#fffdf7;
+    --sand:#e8e0cc;
+    --red:#b5462f;
+    --radius:18px;
+    --shadow:0 18px 40px -18px rgba(18,70,43,.35);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Manrope',sans-serif;color:var(--ink);background:var(--cream);
+    line-height:1.5;min-height:100vh;
+  }
+  .wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+
+  header{
+    background:rgba(246,242,231,.9);backdrop-filter:blur(12px);
+    border-bottom:1px solid rgba(31,110,67,.14);position:sticky;top:0;z-index:10;
+  }
+  .head-inner{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .brand{display:flex;align-items:center;gap:12px;font-family:'Fraunces',serif;font-weight:900;font-size:1.25rem}
+  .brand .mark{
+    display:grid;place-items:center;width:38px;height:38px;border-radius:10px;
+    background:linear-gradient(135deg,var(--green),var(--green-deep));color:var(--gold-soft);
+  }
+  .back{color:var(--ink-soft);text-decoration:none;font-weight:600;font-size:.9rem}
+  .back:hover{color:var(--green)}
+
+  main{padding:40px 0 60px}
+  .page-title{font-family:'Fraunces',serif;font-weight:900;font-size:1.9rem;margin-bottom:6px}
+  .page-sub{color:var(--ink-soft);margin-bottom:32px}
+
+  .banner{
+    background:rgba(199,146,61,.14);border:1px solid rgba(199,146,61,.4);color:var(--ink);
+    border-radius:14px;padding:14px 18px;font-size:.9rem;margin-bottom:32px;
+  }
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:36px}
+  .kpi{
+    background:var(--white);border:1px solid rgba(31,110,67,.1);border-radius:var(--radius);
+    padding:22px;box-shadow:0 10px 30px -18px rgba(18,70,43,.2);
+  }
+  .kpi .label{font-size:.8rem;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+  .kpi .value{font-family:'Fraunces',serif;font-weight:900;font-size:2.1rem;color:var(--green-deep)}
+  .kpi .delta{font-size:.82rem;font-weight:700;margin-top:6px}
+  .kpi .delta.up{color:var(--green)}
+  .kpi .delta.down{color:var(--red)}
+
+  .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
+  .panel{
+    background:var(--white);border:1px solid rgba(31,110,67,.1);border-radius:var(--radius);
+    padding:24px;box-shadow:0 10px 30px -18px rgba(18,70,43,.2);
+  }
+  .panel h2{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:800;margin-bottom:16px}
+
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th{text-align:left;color:var(--ink-soft);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:2px solid var(--sand)}
+  td{padding:12px 10px;border-bottom:1px solid var(--sand)}
+  tr:last-child td{border-bottom:none}
+  .status{display:inline-block;padding:4px 10px;border-radius:99px;font-size:.76rem;font-weight:700}
+  .status.confirme{background:rgba(31,110,67,.14);color:var(--green-deep)}
+  .status.attente{background:rgba(199,146,61,.18);color:#8a611f}
+  .status.annule{background:rgba(181,70,47,.14);color:var(--red)}
+
+  .list{display:grid;gap:14px}
+  .list-item{display:flex;justify-content:space-between;align-items:center;font-size:.9rem}
+  .list-item .name{font-weight:700}
+  .list-item .meta{color:var(--ink-soft);font-size:.82rem}
+  .tag{font-size:.76rem;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--cream-2);color:var(--ink-soft)}
+
+  @media(max-width:900px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .grid-2{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-inner">
+    <div class="brand"><span class="mark">ك</span> Kinayad</div>
+    <a class="back" href="/">← Retour au site</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">Tableau de bord</h1>
+  <p class="page-sub">Vue d'ensemble de vos rendez-vous et rappels WhatsApp.</p>
+
+  <div class="banner">
+    ⚠️ Données de démonstration. Ce tableau de bord n'est pas encore connecté à l'API Kinayad
+    (backend FastAPI) — brancher <code>fetch()</code> sur les endpoints <code>/bookings</code> une fois
+    l'API déployée pour afficher les données réelles du cabinet.
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="label">RDV aujourd'hui</div>
+      <div class="value">12</div>
+      <div class="delta up">+3 vs hier</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Taux de confirmation</div>
+      <div class="value">87%</div>
+      <div class="delta up">+5 pts ce mois</div>
+    </div>
+    <div class="kpi">
+      <div class="label">No-show ce mois</div>
+      <div class="value">6%</div>
+      <div class="delta up">−14 pts vs avant Kinayad</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Rappels envoyés</div>
+      <div class="value">142</div>
+      <div class="delta up">+18 cette semaine</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <h2>Prochains rendez-vous</h2>
+      <table>
+        <thead>
+          <tr><th>Patient</th><th>Heure</th><th>Type</th><th>Statut</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Amine Bennani</td><td>10:00</td><td>Consultation</td><td><span class="status confirme">Confirmé</span></td></tr>
+          <tr><td>Salma Idrissi</td><td>11:30</td><td>Contrôle</td><td><span class="status confirme">Confirmé</span></td></tr>
+          <tr><td>Karim Fassi</td><td>14:00</td><td>Consultation</td><td><span class="status attente">En attente</span></td></tr>
+          <tr><td>Nadia Alaoui</td><td>15:15</td><td>Soin</td><td><span class="status annule">Annulé</span></td></tr>
+          <tr><td>Youssef Benali</td><td>16:45</td><td>Consultation</td><td><span class="status confirme">Confirmé</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>Rappels programmés</h2>
+      <div class="list">
+        <div class="list-item">
+          <div><div class="name">Salma Idrissi</div><div class="meta">RDV demain 11:30</div></div>
+          <span class="tag">J-1 · 24h</span>
+        </div>
+        <div class="list-item">
+          <div><div class="name">Karim Fassi</div><div class="meta">RDV aujourd'hui 14:00</div></div>
+          <span class="tag">J · 2h</span>
+        </div>
+        <div class="list-item">
+          <div><div class="name">Youssef Benali</div><div class="meta">RDV aujourd'hui 16:45</div></div>
+          <span class="tag">J · 2h</span>
+        </div>
+        <div class="list-item">
+          <div><div class="name">Nadia Alaoui</div><div class="meta">RDV après-demain 09:00</div></div>
+          <span class="tag">J-1 · 24h</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
