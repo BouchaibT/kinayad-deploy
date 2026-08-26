@@ -81,6 +81,34 @@
   .status.cancelled,.status.no_show{background:rgba(181,70,47,.14);color:var(--red)}
   .empty{color:var(--ink-soft);font-size:.88rem;padding:10px 0}
 
+  .gate{
+    position:fixed;inset:0;background:var(--cream);display:flex;align-items:center;justify-content:center;
+    z-index:100;padding:20px;
+  }
+  .gate-card{
+    background:var(--white);border:1px solid rgba(31,110,67,.14);border-radius:22px;padding:40px;
+    max-width:360px;width:100%;box-shadow:var(--shadow);text-align:center;
+  }
+  .gate-card .mark{
+    display:grid;place-items:center;width:48px;height:48px;border-radius:12px;margin:0 auto 18px;
+    background:linear-gradient(135deg,var(--green),var(--green-deep));color:var(--gold-soft);
+    font-family:'Fraunces',serif;font-weight:900;font-size:1.3rem;
+  }
+  .gate-card h1{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;margin-bottom:8px}
+  .gate-card p{color:var(--ink-soft);font-size:.88rem;margin-bottom:20px}
+  .gate-card input{
+    width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--sand);
+    font-family:inherit;font-size:.95rem;margin-bottom:12px;text-align:center;
+  }
+  .gate-card input:focus{outline:2px solid var(--green)}
+  .gate-card button{
+    width:100%;padding:13px;border:none;border-radius:12px;background:var(--green-deep);color:var(--white);
+    font-family:inherit;font-weight:700;font-size:.95rem;cursor:pointer;transition:.2s;
+  }
+  .gate-card button:hover{background:var(--green)}
+  .gate-error{color:var(--red);font-size:.85rem;margin-bottom:12px;min-height:1.2em}
+  .hidden{display:none !important}
+
   .list{display:grid;gap:14px}
   .list-item{display:flex;justify-content:space-between;align-items:center;font-size:.9rem}
   .list-item .name{font-weight:700}
@@ -95,6 +123,20 @@
 </head>
 <body>
 
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="mark">ك</div>
+    <h1>Tableau de bord Kinayad</h1>
+    <p>Accès protégé — entrez le mot de passe pour continuer.</p>
+    <form id="gate-form">
+      <div class="gate-error" id="gate-error"></div>
+      <input type="password" id="gate-input" placeholder="Mot de passe" autocomplete="current-password" required>
+      <button type="submit">Accéder au tableau de bord</button>
+    </form>
+  </div>
+</div>
+
+<div id="app" class="hidden">
 <header>
   <div class="wrap head-inner">
     <div class="brand"><span class="mark">ك</span> Kinayad</div>
@@ -152,10 +194,12 @@
     </div>
   </div>
 </main>
+</div>
 
 <script>
   const API_BASE = "https://kinayad-api.onrender.com";
   const TENANT_SLUG = "demo-cabinet-rabat"; // cabinet de démonstration — à remplacer par le vrai cabinet une fois onboardé
+  const KEY_STORAGE = "kinayad_dashboard_key";
 
   const STATUS_LABELS = {
     pending: "En attente", confirmed: "Confirmé", rescheduled: "Reporté",
@@ -172,16 +216,26 @@
     return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
   }
 
-  async function loadDashboard() {
-    const banner = document.getElementById("banner");
-    try {
-      const [summary, appointments, reminders] = await Promise.all([
-        fetch(`${API_BASE}/public/dashboard/${TENANT_SLUG}/summary`).then(r => r.json()),
-        fetch(`${API_BASE}/public/dashboard/${TENANT_SLUG}/appointments/upcoming`).then(r => r.json()),
-        fetch(`${API_BASE}/public/dashboard/${TENANT_SLUG}/reminders/upcoming`).then(r => r.json()),
-      ]);
+  async function authedFetch(path, key) {
+    const r = await fetch(`${API_BASE}${path}`, { headers: { "X-Dashboard-Key": key } });
+    if (r.status === 401) {
+      const err = new Error("unauthorized");
+      err.unauthorized = true;
+      throw err;
+    }
+    if (!r.ok) throw new Error("http " + r.status);
+    return r.json();
+  }
 
-      document.getElementById("kpi-today").textContent = summary.appointments_today;
+  async function loadDashboard(key) {
+    const banner = document.getElementById("banner");
+    const [summary, appointments, reminders] = await Promise.all([
+        authedFetch(`/public/dashboard/${TENANT_SLUG}/summary`, key),
+        authedFetch(`/public/dashboard/${TENANT_SLUG}/appointments/upcoming`, key),
+        authedFetch(`/public/dashboard/${TENANT_SLUG}/reminders/upcoming`, key),
+    ]);
+
+    document.getElementById("kpi-today").textContent = summary.appointments_today;
       document.getElementById("kpi-confirm").textContent =
         summary.confirmation_rate_pct === null ? "—" : summary.confirmation_rate_pct + "%";
       document.getElementById("kpi-noshow").textContent =
@@ -221,16 +275,49 @@
       banner.textContent = `✅ Connecté à l'API en direct — données du cabinet « ${summary.tenant_name} » (cabinet de démonstration tant qu'aucun vrai cabinet n'est encore créé).`;
       banner.style.background = "rgba(31,110,67,.1)";
       banner.style.borderColor = "rgba(31,110,67,.35)";
+  }
+
+  const gate = document.getElementById("gate");
+  const app = document.getElementById("app");
+  const gateForm = document.getElementById("gate-form");
+  const gateInput = document.getElementById("gate-input");
+  const gateError = document.getElementById("gate-error");
+
+  async function tryUnlock(key, { fromStorage } = {}) {
+    try {
+      await loadDashboard(key);
+      sessionStorage.setItem(KEY_STORAGE, key);
+      gate.classList.add("hidden");
+      app.classList.remove("hidden");
     } catch (err) {
-      banner.textContent = "⚠️ Impossible de joindre l'API pour l'instant (le serveur gratuit était peut-être en veille). Rechargez la page dans une minute.";
-      document.getElementById("appointments-body").innerHTML =
-        '<tr><td colspan="4" class="empty">Données indisponibles.</td></tr>';
-      document.getElementById("reminders-list").innerHTML =
-        '<div class="empty">Données indisponibles.</div>';
+      if (err.unauthorized) {
+        sessionStorage.removeItem(KEY_STORAGE);
+        if (!fromStorage) gateError.textContent = "Mot de passe incorrect.";
+      } else {
+        // Serveur injoignable (probablement en veille) : on affiche le tableau
+        // quand même avec un message d'attente, sans révéler si le mot de passe était bon.
+        app.classList.remove("hidden");
+        gate.classList.add("hidden");
+        document.getElementById("banner").textContent =
+          "⚠️ Impossible de joindre l'API pour l'instant (le serveur gratuit était peut-être en veille). Rechargez la page dans une minute.";
+        document.getElementById("appointments-body").innerHTML =
+          '<tr><td colspan="4" class="empty">Données indisponibles.</td></tr>';
+        document.getElementById("reminders-list").innerHTML =
+          '<div class="empty">Données indisponibles.</div>';
+      }
     }
   }
 
-  loadDashboard();
+  gateForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    gateError.textContent = "";
+    tryUnlock(gateInput.value);
+  });
+
+  const storedKey = sessionStorage.getItem(KEY_STORAGE);
+  if (storedKey) {
+    tryUnlock(storedKey, { fromStorage: true });
+  }
 </script>
 
 </body>
