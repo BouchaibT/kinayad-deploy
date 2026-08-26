@@ -450,7 +450,7 @@
   // Stagger hero phone messages on load
   document.querySelectorAll('.msg').forEach((m,i)=>{m.style.animationDelay=(.15+.18*i)+'s'});
 
-  // Form submit → WhatsApp message (placeholder — remplacez YOUR_NUMBER par le vrai numéro WhatsApp Business, format 2126XXXXXXXXX)
+  // Form submit → WhatsApp message (numéro WhatsApp Business réel)
   function submitLead(e){
     const nom=document.getElementById('nom').value,
           type=document.getElementById('type').value,
@@ -458,7 +458,7 @@
           tel=document.getElementById('tel').value;
     const txt=encodeURIComponent(
       'Bonjour Kinayad 👋 Je suis '+nom+' ('+type+' - '+ville+').\nJe souhaite réserver une démo gratuite.\nMon WhatsApp : '+tel);
-    window.open('https://wa.me/YOUR_NUMBER?text='+txt,'_blank');
+    window.open('https://wa.me/33667486933?text='+txt,'_blank');
     alert('Merci '+nom+' ! Ouverture de WhatsApp pour réserver votre démo ✅');
     e.preventDefault();
     return false;
