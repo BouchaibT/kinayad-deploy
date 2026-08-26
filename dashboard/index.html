@@ -76,9 +76,10 @@
   td{padding:12px 10px;border-bottom:1px solid var(--sand)}
   tr:last-child td{border-bottom:none}
   .status{display:inline-block;padding:4px 10px;border-radius:99px;font-size:.76rem;font-weight:700}
-  .status.confirme{background:rgba(31,110,67,.14);color:var(--green-deep)}
-  .status.attente{background:rgba(199,146,61,.18);color:#8a611f}
-  .status.annule{background:rgba(181,70,47,.14);color:var(--red)}
+  .status.confirmed,.status.completed{background:rgba(31,110,67,.14);color:var(--green-deep)}
+  .status.pending,.status.rescheduled{background:rgba(199,146,61,.18);color:#8a611f}
+  .status.cancelled,.status.no_show{background:rgba(181,70,47,.14);color:var(--red)}
+  .empty{color:var(--ink-soft);font-size:.88rem;padding:10px 0}
 
   .list{display:grid;gap:14px}
   .list-item{display:flex;justify-content:space-between;align-items:center;font-size:.9rem}
@@ -105,32 +106,28 @@
   <h1 class="page-title">Tableau de bord</h1>
   <p class="page-sub">Vue d'ensemble de vos rendez-vous et rappels WhatsApp.</p>
 
-  <div class="banner">
-    ⚠️ Données de démonstration. Ce tableau de bord n'est pas encore connecté à l'API Kinayad
-    (backend FastAPI) — brancher <code>fetch()</code> sur les endpoints <code>/bookings</code> une fois
-    l'API déployée pour afficher les données réelles du cabinet.
+  <div class="banner" id="banner">
+    🔌 Connexion à l'API Kinayad en cours… (le serveur gratuit peut mettre jusqu'à 50 secondes à se
+    réveiller s'il était en veille — c'est normal, patientez.)
   </div>
 
   <div class="kpi-grid">
     <div class="kpi">
       <div class="label">RDV aujourd'hui</div>
-      <div class="value">12</div>
-      <div class="delta up">+3 vs hier</div>
+      <div class="value" id="kpi-today">—</div>
     </div>
     <div class="kpi">
       <div class="label">Taux de confirmation</div>
-      <div class="value">87%</div>
-      <div class="delta up">+5 pts ce mois</div>
+      <div class="value" id="kpi-confirm">—</div>
     </div>
     <div class="kpi">
-      <div class="label">No-show ce mois</div>
-      <div class="value">6%</div>
-      <div class="delta up">−14 pts vs avant Kinayad</div>
+      <div class="label">Taux de no-show</div>
+      <div class="value" id="kpi-noshow">—</div>
     </div>
     <div class="kpi">
-      <div class="label">Rappels envoyés</div>
-      <div class="value">142</div>
-      <div class="delta up">+18 cette semaine</div>
+      <div class="label">Rappels envoyés (7j)</div>
+      <div class="value" id="kpi-sent">—</div>
+      <div class="delta up" id="kpi-pending"></div>
     </div>
   </div>
 
@@ -139,41 +136,102 @@
       <h2>Prochains rendez-vous</h2>
       <table>
         <thead>
-          <tr><th>Patient</th><th>Heure</th><th>Type</th><th>Statut</th></tr>
+          <tr><th>Patient</th><th>Date</th><th>Heure</th><th>Statut</th></tr>
         </thead>
-        <tbody>
-          <tr><td>Amine Bennani</td><td>10:00</td><td>Consultation</td><td><span class="status confirme">Confirmé</span></td></tr>
-          <tr><td>Salma Idrissi</td><td>11:30</td><td>Contrôle</td><td><span class="status confirme">Confirmé</span></td></tr>
-          <tr><td>Karim Fassi</td><td>14:00</td><td>Consultation</td><td><span class="status attente">En attente</span></td></tr>
-          <tr><td>Nadia Alaoui</td><td>15:15</td><td>Soin</td><td><span class="status annule">Annulé</span></td></tr>
-          <tr><td>Youssef Benali</td><td>16:45</td><td>Consultation</td><td><span class="status confirme">Confirmé</span></td></tr>
+        <tbody id="appointments-body">
+          <tr><td colspan="4" class="empty">Chargement…</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="panel">
       <h2>Rappels programmés</h2>
-      <div class="list">
-        <div class="list-item">
-          <div><div class="name">Salma Idrissi</div><div class="meta">RDV demain 11:30</div></div>
-          <span class="tag">J-1 · 24h</span>
-        </div>
-        <div class="list-item">
-          <div><div class="name">Karim Fassi</div><div class="meta">RDV aujourd'hui 14:00</div></div>
-          <span class="tag">J · 2h</span>
-        </div>
-        <div class="list-item">
-          <div><div class="name">Youssef Benali</div><div class="meta">RDV aujourd'hui 16:45</div></div>
-          <span class="tag">J · 2h</span>
-        </div>
-        <div class="list-item">
-          <div><div class="name">Nadia Alaoui</div><div class="meta">RDV après-demain 09:00</div></div>
-          <span class="tag">J-1 · 24h</span>
-        </div>
+      <div class="list" id="reminders-list">
+        <div class="empty">Chargement…</div>
       </div>
     </div>
   </div>
 </main>
+
+<script>
+  const API_BASE = "https://kinayad-api.onrender.com";
+  const TENANT_SLUG = "demo-cabinet-rabat"; // cabinet de démonstration — à remplacer par le vrai cabinet une fois onboardé
+
+  const STATUS_LABELS = {
+    pending: "En attente", confirmed: "Confirmé", rescheduled: "Reporté",
+    cancelled: "Annulé", completed: "Terminé", no_show: "Absent",
+    sent: "Envoyé", retrying: "Nouvelle tentative", failed: "Échec",
+  };
+
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+  }
+  function fmtTime(iso) {
+    const d = new Date(iso);
+    return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  async function loadDashboard() {
+    const banner = document.getElementById("banner");
+    try {
+      const [summary, appointments, reminders] = await Promise.all([
+        fetch(`${API_BASE}/public/dashboard/${TENANT_SLUG}/summary`).then(r => r.json()),
+        fetch(`${API_BASE}/public/dashboard/${TENANT_SLUG}/appointments/upcoming`).then(r => r.json()),
+        fetch(`${API_BASE}/public/dashboard/${TENANT_SLUG}/reminders/upcoming`).then(r => r.json()),
+      ]);
+
+      document.getElementById("kpi-today").textContent = summary.appointments_today;
+      document.getElementById("kpi-confirm").textContent =
+        summary.confirmation_rate_pct === null ? "—" : summary.confirmation_rate_pct + "%";
+      document.getElementById("kpi-noshow").textContent =
+        summary.no_show_rate_pct === null ? "—" : summary.no_show_rate_pct + "%";
+      document.getElementById("kpi-sent").textContent = summary.reminders_sent_7d;
+      document.getElementById("kpi-pending").textContent =
+        summary.reminders_pending + " en attente";
+
+      const body = document.getElementById("appointments-body");
+      body.innerHTML = "";
+      if (appointments.length === 0) {
+        body.innerHTML = '<tr><td colspan="4" class="empty">Aucun rendez-vous à venir.</td></tr>';
+      } else {
+        for (const a of appointments) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${a.client_name}</td><td>${fmtDate(a.start_at)}</td><td>${fmtTime(a.start_at)}</td>
+            <td><span class="status ${a.status}">${STATUS_LABELS[a.status] || a.status}</span></td>`;
+          body.appendChild(tr);
+        }
+      }
+
+      const list = document.getElementById("reminders-list");
+      list.innerHTML = "";
+      if (reminders.length === 0) {
+        list.innerHTML = '<div class="empty">Aucun rappel en attente.</div>';
+      } else {
+        for (const r of reminders) {
+          const div = document.createElement("div");
+          div.className = "list-item";
+          div.innerHTML = `<div><div class="name">${r.client_name}</div>
+            <div class="meta">RDV le ${fmtDate(r.send_at)} à ${fmtTime(r.send_at)}</div></div>
+            <span class="tag">${r.type}</span>`;
+          list.appendChild(div);
+        }
+      }
+
+      banner.textContent = `✅ Connecté à l'API en direct — données du cabinet « ${summary.tenant_name} » (cabinet de démonstration tant qu'aucun vrai cabinet n'est encore créé).`;
+      banner.style.background = "rgba(31,110,67,.1)";
+      banner.style.borderColor = "rgba(31,110,67,.35)";
+    } catch (err) {
+      banner.textContent = "⚠️ Impossible de joindre l'API pour l'instant (le serveur gratuit était peut-être en veille). Rechargez la page dans une minute.";
+      document.getElementById("appointments-body").innerHTML =
+        '<tr><td colspan="4" class="empty">Données indisponibles.</td></tr>';
+      document.getElementById("reminders-list").innerHTML =
+        '<div class="empty">Données indisponibles.</div>';
+    }
+  }
+
+  loadDashboard();
+</script>
 
 </body>
 </html>
