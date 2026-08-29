@@ -21,6 +21,7 @@
     --white:#fffdf7;
     --sand:#e8e0cc;
     --red:#b5462f;
+    --red-soft:#f6e3dd;
     --radius:18px;
     --shadow:0 18px 40px -18px rgba(18,70,43,.35);
   }
@@ -29,78 +30,125 @@
     font-family:'Manrope',sans-serif;color:var(--ink);background:var(--cream);
     line-height:1.5;min-height:100vh;
   }
-  .wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
 
   header{
     background:rgba(246,242,231,.9);backdrop-filter:blur(12px);
     border-bottom:1px solid rgba(31,110,67,.14);position:sticky;top:0;z-index:10;
   }
-  .head-inner{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .head-inner{display:flex;align-items:center;justify-content:space-between;padding:18px 0;gap:16px}
   .brand{display:flex;align-items:center;gap:12px;font-family:'Fraunces',serif;font-weight:900;font-size:1.25rem}
   .brand .mark{
     display:grid;place-items:center;width:38px;height:38px;border-radius:10px;
     background:linear-gradient(135deg,var(--green),var(--green-deep));color:var(--gold-soft);
   }
-  .back{color:var(--ink-soft);text-decoration:none;font-weight:600;font-size:.9rem}
-  .back:hover{color:var(--green)}
+  .head-right{display:flex;align-items:center;gap:16px}
+  .cabinet-name{font-size:.9rem;font-weight:700;color:var(--green-deep)}
+  .cabinet-slug{font-size:.75rem;color:var(--ink-soft)}
+  .back{color:var(--ink-soft);text-decoration:none;font-weight:600;font-size:.9rem;padding:8px 14px;border-radius:99px;border:1.5px solid var(--sand);transition:.2s}
+  .back:hover{color:var(--green);border-color:var(--green)}
+  .logout{background:none;border:none;color:var(--ink-soft);font-weight:600;font-size:.85rem;cursor:pointer;padding:8px 10px;border-radius:99px;transition:.2s}
+  .logout:hover{color:var(--red)}
 
-  main{padding:40px 0 60px}
+  main{padding:36px 0 60px}
   .page-title{font-family:'Fraunces',serif;font-weight:900;font-size:1.9rem;margin-bottom:6px}
-  .page-sub{color:var(--ink-soft);margin-bottom:32px}
+  .page-sub{color:var(--ink-soft);margin-bottom:28px;font-size:.95rem}
 
   .banner{
     background:rgba(199,146,61,.14);border:1px solid rgba(199,146,61,.4);color:var(--ink);
-    border-radius:14px;padding:14px 18px;font-size:.9rem;margin-bottom:32px;
+    border-radius:14px;padding:14px 18px;font-size:.9rem;margin-bottom:28px;
   }
+  .banner.ok{background:rgba(31,110,67,.1);border-color:rgba(31,110,67,.35)}
+  .banner.err{background:var(--red-soft);border-color:rgba(181,70,47,.35)}
 
-  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:36px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:28px}
   .kpi{
     background:var(--white);border:1px solid rgba(31,110,67,.1);border-radius:var(--radius);
-    padding:22px;box-shadow:0 10px 30px -18px rgba(18,70,43,.2);
+    padding:22px;box-shadow:0 10px 30px -18px rgba(18,70,43,.2);position:relative;overflow:hidden;
   }
-  .kpi .label{font-size:.8rem;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
-  .kpi .value{font-family:'Fraunces',serif;font-weight:900;font-size:2.1rem;color:var(--green-deep)}
-  .kpi .delta{font-size:.82rem;font-weight:700;margin-top:6px}
+  .kpi::after{content:"";position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(31,110,67,.08),transparent 70%)}
+  .kpi .label{font-size:.78rem;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+  .kpi .value{font-family:'Fraunces',serif;font-weight:900;font-size:2.2rem;color:var(--green-deep);line-height:1}
+  .kpi .delta{font-size:.82rem;font-weight:700;margin-top:8px}
   .kpi .delta.up{color:var(--green)}
   .kpi .delta.down{color:var(--red)}
 
-  .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
+  .grid-main{display:grid;grid-template-columns:1.45fr 1fr;gap:20px;align-items:start}
   .panel{
     background:var(--white);border:1px solid rgba(31,110,67,.1);border-radius:var(--radius);
     padding:24px;box-shadow:0 10px 30px -18px rgba(18,70,43,.2);
   }
-  .panel h2{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:800;margin-bottom:16px}
+  .panel h2{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:800;margin-bottom:4px}
+  .panel .panel-sub{color:var(--ink-soft);font-size:.85rem;margin-bottom:16px}
 
   table{width:100%;border-collapse:collapse;font-size:.9rem}
-  th{text-align:left;color:var(--ink-soft);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:2px solid var(--sand)}
-  td{padding:12px 10px;border-bottom:1px solid var(--sand)}
+  th{text-align:left;color:var(--ink-soft);font-weight:700;font-size:.76rem;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:2px solid var(--sand)}
+  td{padding:12px 10px;border-bottom:1px solid var(--sand);vertical-align:middle}
   tr:last-child td{border-bottom:none}
-  .status{display:inline-block;padding:4px 10px;border-radius:99px;font-size:.76rem;font-weight:700}
+  .status{display:inline-block;padding:4px 11px;border-radius:99px;font-size:.75rem;font-weight:700}
   .status.confirmed,.status.completed{background:rgba(31,110,67,.14);color:var(--green-deep)}
   .status.pending,.status.rescheduled{background:rgba(199,146,61,.18);color:#8a611f}
   .status.cancelled,.status.no_show{background:rgba(181,70,47,.14);color:var(--red)}
-  .empty{color:var(--ink-soft);font-size:.88rem;padding:10px 0}
+  .empty{color:var(--ink-soft);font-size:.88rem;padding:14px 0;text-align:center}
+
+  .btn-cancel{
+    background:none;border:1.5px solid rgba(181,70,47,.4);color:var(--red);
+    font-family:inherit;font-size:.75rem;font-weight:700;padding:5px 12px;border-radius:99px;cursor:pointer;transition:.2s;white-space:nowrap;
+  }
+  .btn-cancel:hover{background:var(--red);color:var(--white);border-color:var(--red)}
+
+  .list{display:grid;gap:12px}
+  .list-item{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;gap:12px}
+  .list-item .name{font-weight:700}
+  .list-item .meta{color:var(--ink-soft);font-size:.82rem}
+  .tag{font-size:.74rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--cream-2);color:var(--ink-soft);white-space:nowrap}
+
+  /* Formulaire nouveau RDV */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .form-grid .full{grid-column:1/-1}
+  form label{font-size:.78rem;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px}
+  form input,form select{
+    width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--sand);
+    background:var(--white);color:var(--ink);font-family:inherit;font-size:.92rem;transition:.2s;
+  }
+  form input:focus,form select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(31,110,67,.12)}
+  .btn-submit{
+    width:100%;background:var(--green-deep);color:var(--white);border:none;border-radius:12px;
+    font-family:inherit;font-weight:800;font-size:.95rem;padding:14px;cursor:pointer;transition:.25s;margin-top:4px;
+  }
+  .btn-submit:hover{background:var(--green);transform:translateY(-1px)}
+  .btn-submit:disabled{opacity:.55;cursor:wait;transform:none}
+
+  /* Toasts */
+  .toast-wrap{position:fixed;bottom:24px;right:24px;display:grid;gap:10px;z-index:200}
+  .toast{
+    background:var(--green-deep);color:var(--white);padding:14px 20px;border-radius:14px;
+    font-size:.88rem;font-weight:600;box-shadow:var(--shadow);animation:toastIn .3s both;
+    max-width:340px;
+  }
+  .toast.err{background:var(--red)}
+  @keyframes toastIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
   .gate{
     position:fixed;inset:0;background:var(--cream);display:flex;align-items:center;justify-content:center;
     z-index:100;padding:20px;
   }
   .gate-card{
-    background:var(--white);border:1px solid rgba(31,110,67,.14);border-radius:22px;padding:40px;
-    max-width:360px;width:100%;box-shadow:var(--shadow);text-align:center;
+    background:var(--white);border:1px solid rgba(31,110,67,.14);border-radius:22px;padding:42px;
+    max-width:370px;width:100%;box-shadow:var(--shadow);text-align:center;
   }
   .gate-card .mark{
-    display:grid;place-items:center;width:48px;height:48px;border-radius:12px;margin:0 auto 18px;
+    display:grid;place-items:center;width:52px;height:52px;border-radius:14px;margin:0 auto 18px;
     background:linear-gradient(135deg,var(--green),var(--green-deep));color:var(--gold-soft);
-    font-family:'Fraunces',serif;font-weight:900;font-size:1.3rem;
+    font-family:'Fraunces',serif;font-weight:900;font-size:1.4rem;
   }
-  .gate-card h1{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;margin-bottom:8px}
-  .gate-card p{color:var(--ink-soft);font-size:.88rem;margin-bottom:20px}
+  .gate-card h1{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:900;margin-bottom:8px}
+  .gate-card p{color:var(--ink-soft);font-size:.88rem;margin-bottom:22px}
   .gate-card input{
-    width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--sand);
+    width:100%;padding:13px 15px;border-radius:12px;border:1.5px solid var(--sand);
     font-family:inherit;font-size:.95rem;margin-bottom:12px;text-align:center;
   }
-  .gate-card input:focus{outline:2px solid var(--green)}
+  .gate-card input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(31,110,67,.12)}
   .gate-card button{
     width:100%;padding:13px;border:none;border-radius:12px;background:var(--green-deep);color:var(--white);
     font-family:inherit;font-weight:700;font-size:.95rem;cursor:pointer;transition:.2s;
@@ -109,15 +157,10 @@
   .gate-error{color:var(--red);font-size:.85rem;margin-bottom:12px;min-height:1.2em}
   .hidden{display:none !important}
 
-  .list{display:grid;gap:14px}
-  .list-item{display:flex;justify-content:space-between;align-items:center;font-size:.9rem}
-  .list-item .name{font-weight:700}
-  .list-item .meta{color:var(--ink-soft);font-size:.82rem}
-  .tag{font-size:.76rem;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--cream-2);color:var(--ink-soft)}
-
-  @media(max-width:900px){
+  @media(max-width:980px){
     .kpi-grid{grid-template-columns:repeat(2,1fr)}
-    .grid-2{grid-template-columns:1fr}
+    .grid-main{grid-template-columns:1fr}
+    .form-grid{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -140,13 +183,20 @@
 <header>
   <div class="wrap head-inner">
     <div class="brand"><span class="mark">ك</span> Kinayad</div>
-    <a class="back" href="/">← Retour au site</a>
+    <div class="head-right">
+      <div style="text-align:right">
+        <div class="cabinet-name" id="cabinet-name">Cabinet</div>
+        <div class="cabinet-slug">Praticien · WhatsApp</div>
+      </div>
+      <a class="back" href="/">← Site</a>
+      <button class="logout" id="logout" title="Se déconnecter">Déconnexion</button>
+    </div>
   </div>
 </header>
 
 <main class="wrap">
   <h1 class="page-title">Tableau de bord</h1>
-  <p class="page-sub">Vue d'ensemble de vos rendez-vous et rappels WhatsApp.</p>
+  <p class="page-sub">Vos rendez-vous, vos rappels WhatsApp et vos conversations en cours, en un coup d'œil.</p>
 
   <div class="banner" id="banner">
     🔌 Connexion à l'API Kinayad en cours… (le serveur gratuit peut mettre jusqu'à 50 secondes à se
@@ -173,36 +223,79 @@
     </div>
   </div>
 
-  <div class="grid-2">
-    <div class="panel">
-      <h2>Prochains rendez-vous</h2>
-      <table>
-        <thead>
-          <tr><th>Patient</th><th>Date</th><th>Heure</th><th>Statut</th></tr>
-        </thead>
-        <tbody id="appointments-body">
-          <tr><td colspan="4" class="empty">Chargement…</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="grid-main">
+    <div style="display:grid;gap:20px">
+      <div class="panel">
+        <h2>Prochains rendez-vous</h2>
+        <p class="panel-sub">Cliquez sur Annuler pour libérer un créneau (le patient ne recevra plus de rappel).</p>
+        <table>
+          <thead>
+            <tr><th>Patient</th><th>Date</th><th>Heure</th><th>Statut</th><th></th></tr>
+          </thead>
+          <tbody id="appointments-body">
+            <tr><td colspan="5" class="empty">Chargement…</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-    <div class="panel">
-      <h2>Rappels programmés</h2>
-      <div class="list" id="reminders-list">
-        <div class="empty">Chargement…</div>
+      <div class="panel">
+        <h2>Rappels programmés</h2>
+        <p class="panel-sub">Envoyés automatiquement 24h et 2h avant chaque rendez-vous.</p>
+        <div class="list" id="reminders-list">
+          <div class="empty">Chargement…</div>
+        </div>
       </div>
     </div>
 
-    <div class="panel">
-      <h2>Conversations WhatsApp en cours</h2>
-      <p class="page-sub" style="margin-bottom:14px">Patients en train de prendre ou annuler un RDV sur WhatsApp.</p>
-      <div class="list" id="conversations-list">
-        <div class="empty">Chargement…</div>
+    <div style="display:grid;gap:20px">
+      <div class="panel">
+        <h2>Nouveau rendez-vous</h2>
+        <p class="panel-sub">Créé depuis le cabinet — rappels 24h/2h planifiés automatiquement.</p>
+        <form id="booking-form">
+          <div class="form-grid">
+            <div class="full">
+              <label for="bk-name">Nom du patient</label>
+              <input id="bk-name" type="text" placeholder="Ex. Fatima Bennani" autocomplete="off">
+            </div>
+            <div class="full">
+              <label for="bk-wa">Numéro WhatsApp</label>
+              <input id="bk-wa" type="tel" placeholder="+212 6 XX XX XX XX" required>
+            </div>
+            <div>
+              <label for="bk-date">Date</label>
+              <input id="bk-date" type="date" required>
+            </div>
+            <div>
+              <label for="bk-time">Heure</label>
+              <input id="bk-time" type="time" required>
+            </div>
+            <div class="full">
+              <label for="bk-dur">Durée</label>
+              <select id="bk-dur">
+                <option value="15">15 min</option>
+                <option value="30" selected>30 min</option>
+                <option value="45">45 min</option>
+                <option value="60">60 min</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-submit" type="submit" id="bk-submit">＋ Créer le rendez-vous</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Conversations WhatsApp en cours</h2>
+        <p class="panel-sub">Patients en train de prendre ou annuler un RDV sur WhatsApp.</p>
+        <div class="list" id="conversations-list">
+          <div class="empty">Chargement…</div>
+        </div>
       </div>
     </div>
   </div>
 </main>
 </div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
   const API_BASE = "https://kinayad-api.onrender.com";
@@ -214,6 +307,14 @@
     cancelled: "Annulé", completed: "Terminé", no_show: "Absent",
     sent: "Envoyé", retrying: "Nouvelle tentative", failed: "Échec",
   };
+  const CONV_LABELS = {
+    CHOOSING_DATE: { t: "Choisit un jour", c: "pending" },
+    CHOOSING_SLOT: { t: "Choisit un créneau", c: "pending" },
+    CONFIRMING: { t: "Confirme son RDV", c: "confirmed" },
+    CANCELLING: { t: "Annule un RDV", c: "cancelled" },
+  };
+
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
   function fmtDate(iso) {
     const d = new Date(iso);
@@ -224,14 +325,33 @@
     return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
   }
 
-  async function authedFetch(path, key) {
-    const r = await fetch(`${API_BASE}${path}`, { headers: { "X-Dashboard-Key": key } });
+  function toast(msg, isErr = false) {
+    const wrap = document.getElementById("toast-wrap");
+    const el = document.createElement("div");
+    el.className = "toast" + (isErr ? " err" : "");
+    el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .4s"; }, 3600);
+    setTimeout(() => el.remove(), 4100);
+  }
+
+  async function authedFetch(path, key, options = {}) {
+    const r = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: { "X-Dashboard-Key": key, ...(options.headers || {}) },
+    });
     if (r.status === 401) {
       const err = new Error("unauthorized");
       err.unauthorized = true;
       throw err;
     }
-    if (!r.ok) throw new Error("http " + r.status);
+    if (!r.ok) {
+      let detail = "http " + r.status;
+      try { detail = (await r.json()).detail || detail; } catch (_) {}
+      const err = new Error(detail);
+      err.status = r.status;
+      throw err;
+    }
     return r.json();
   }
 
@@ -239,74 +359,123 @@
     const banner = document.getElementById("banner");
     const [summary, appointments, reminders, conversations] = await Promise.all([
         authedFetch(`/public/dashboard/${TENANT_SLUG}/summary`, key),
-        authedFetch(`/public/dashboard/${TENANT_SLUG}/appointments/upcoming`, key),
+        authedFetch(`/public/dashboard/${TENANT_SLUG}/appointments/upcoming?limit=15`, key),
         authedFetch(`/public/dashboard/${TENANT_SLUG}/reminders/upcoming`, key),
         authedFetch(`/public/dashboard/${TENANT_SLUG}/conversations`, key),
     ]);
 
+    document.getElementById("cabinet-name").textContent = summary.tenant_name;
     document.getElementById("kpi-today").textContent = summary.appointments_today;
-      document.getElementById("kpi-confirm").textContent =
-        summary.confirmation_rate_pct === null ? "—" : summary.confirmation_rate_pct + "%";
-      document.getElementById("kpi-noshow").textContent =
-        summary.no_show_rate_pct === null ? "—" : summary.no_show_rate_pct + "%";
-      document.getElementById("kpi-sent").textContent = summary.reminders_sent_7d;
-      document.getElementById("kpi-pending").textContent =
-        summary.reminders_pending + " en attente";
+    document.getElementById("kpi-confirm").textContent =
+      summary.confirmation_rate_pct === null ? "—" : summary.confirmation_rate_pct + "%";
+    document.getElementById("kpi-noshow").textContent =
+      summary.no_show_rate_pct === null ? "—" : summary.no_show_rate_pct + "%";
+    document.getElementById("kpi-sent").textContent = summary.reminders_sent_7d;
+    document.getElementById("kpi-pending").textContent =
+      summary.reminders_pending + " en attente";
 
-      const body = document.getElementById("appointments-body");
-      body.innerHTML = "";
-      if (appointments.length === 0) {
-        body.innerHTML = '<tr><td colspan="4" class="empty">Aucun rendez-vous à venir.</td></tr>';
-      } else {
-        for (const a of appointments) {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${a.client_name}</td><td>${fmtDate(a.start_at)}</td><td>${fmtTime(a.start_at)}</td>
-            <td><span class="status ${a.status}">${STATUS_LABELS[a.status] || a.status}</span></td>`;
-          body.appendChild(tr);
-        }
+    const body = document.getElementById("appointments-body");
+    body.innerHTML = "";
+    if (appointments.length === 0) {
+      body.innerHTML = '<tr><td colspan="5" class="empty">Aucun rendez-vous à venir. Créez-en un dans le formulaire.</td></tr>';
+    } else {
+      for (const a of appointments) {
+        const tr = document.createElement("tr");
+        const id = esc(a.appointment_id || "");
+        tr.innerHTML = `<td><b>${esc(a.client_name)}</b></td><td>${fmtDate(a.start_at)}</td><td>${fmtTime(a.start_at)}</td>
+          <td><span class="status ${esc(a.status)}">${esc(STATUS_LABELS[a.status] || a.status)}</span></td>
+          <td style="text-align:right">${a.status === "confirmed" || a.status === "pending" ? `<button class="btn-cancel" data-id="${id}" data-name="${esc(a.client_name)}">Annuler</button>` : ""}</td>`;
+        body.appendChild(tr);
       }
+      body.querySelectorAll(".btn-cancel").forEach(btn => {
+        btn.addEventListener("click", () => cancelAppointment(btn.dataset.id, btn.dataset.name));
+      });
+    }
 
-      const list = document.getElementById("reminders-list");
-      list.innerHTML = "";
-      if (reminders.length === 0) {
-        list.innerHTML = '<div class="empty">Aucun rappel en attente.</div>';
-      } else {
-        for (const r of reminders) {
-          const div = document.createElement("div");
-          div.className = "list-item";
-          div.innerHTML = `<div><div class="name">${r.client_name}</div>
-            <div class="meta">RDV le ${fmtDate(r.send_at)} à ${fmtTime(r.send_at)}</div></div>
-            <span class="tag">${r.type}</span>`;
-          list.appendChild(div);
-        }
+    const list = document.getElementById("reminders-list");
+    list.innerHTML = "";
+    if (reminders.length === 0) {
+      list.innerHTML = '<div class="empty">Aucun rappel en attente.</div>';
+    } else {
+      for (const r of reminders) {
+        const div = document.createElement("div");
+        div.className = "list-item";
+        div.innerHTML = `<div><div class="name">${esc(r.client_name)}</div>
+          <div class="meta">RDV le ${fmtDate(r.send_at)} à ${fmtTime(r.send_at)}</div></div>
+          <span class="tag">${esc(r.type)}</span>`;
+        list.appendChild(div);
       }
+    }
 
-      const convList = document.getElementById("conversations-list");
-      convList.innerHTML = "";
-      if (conversations.length === 0) {
-        convList.innerHTML = '<div class="empty">Aucune conversation en cours.</div>';
-      } else {
-        const STATE_LABELS = {
-          CHOOSING_DATE: { t: "Choisit un jour", c: "status pending" },
-          CHOOSING_SLOT: { t: "Choisit un créneau", c: "status pending" },
-          CONFIRMING: { t: "Confirme son RDV", c: "status confirmed" },
-          CANCELLING: { t: "Annule un RDV", c: "status cancelled" },
-        };
-        for (const c of conversations) {
-          const info = STATE_LABELS[c.state] || { t: c.context_summary || c.state, c: "status pending" };
-          const div = document.createElement("div");
-          div.className = "list-item";
-          div.innerHTML = `<div><div class="name">${c.client_name}</div>
-            <div class="meta">${info.t}</div></div>
-            <span class="status ${info.c.split(" ")[1]}">${info.t}</span>`;
-          convList.appendChild(div);
-        }
+    const convList = document.getElementById("conversations-list");
+    convList.innerHTML = "";
+    if (conversations.length === 0) {
+      convList.innerHTML = '<div class="empty">Aucune conversation en cours.</div>';
+    } else {
+      for (const c of conversations) {
+        const info = CONV_LABELS[c.state] || { t: c.context_summary || c.state, c: "pending" };
+        const div = document.createElement("div");
+        div.className = "list-item";
+        div.innerHTML = `<div><div class="name">${esc(c.client_name)}</div>
+          <div class="meta">${esc(info.t)}</div></div>
+          <span class="status ${esc(info.c)}">${esc(info.t)}</span>`;
+        convList.appendChild(div);
       }
+    }
 
-      banner.textContent = `✅ Connecté à l'API en direct — données du cabinet « ${summary.tenant_name} ».`;
-      banner.style.background = "rgba(31,110,67,.1)";
-      banner.style.borderColor = "rgba(31,110,67,.35)";
+    banner.textContent = `✅ Connecté à l'API en direct — données du cabinet « ${summary.tenant_name} ».`;
+    banner.className = "banner ok";
   }
+
+  async function cancelAppointment(id, name) {
+    if (!id || !confirm(`Annuler le rendez-vous de ${name} ?\nLe patient ne recevra plus de rappel.`)) return;
+    const key = sessionStorage.getItem(KEY_STORAGE);
+    try {
+      await authedFetch(`/public/dashboard/${TENANT_SLUG}/appointments/${id}`, key, { method: "DELETE" });
+      toast(`Rendez-vous de ${name} annulé.`);
+      await loadDashboard(key);
+    } catch (err) {
+      toast("Échec de l'annulation : " + err.message, true);
+    }
+  }
+
+  async function createBooking(e) {
+    e.preventDefault();
+    const key = sessionStorage.getItem(KEY_STORAGE);
+    const name = document.getElementById("bk-name").value.trim();
+    const wa = document.getElementById("bk-wa").value.trim();
+    const date = document.getElementById("bk-date").value;
+    const time = document.getElementById("bk-time").value;
+    const dur = parseInt(document.getElementById("bk-dur").value, 10);
+    if (!wa || !date || !time) { toast("Numéro, date et heure sont requis.", true); return; }
+
+    const startAt = new Date(`${date}T${time}`);
+    if (isNaN(startAt.getTime())) { toast("Date ou heure invalide.", true); return; }
+
+    const btn = document.getElementById("bk-submit");
+    btn.disabled = true;
+    btn.textContent = "Création en cours…";
+    try {
+      await authedFetch(`/public/dashboard/${TENANT_SLUG}/bookings`, key, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wa_id: wa, client_name: name || null,
+          start_at: startAt.toISOString(), duration_min: dur,
+        }),
+      });
+      toast(`Rendez-vous créé pour ${name || wa} — rappels 24h/2h planifiés.`);
+      document.getElementById("booking-form").reset();
+      await loadDashboard(key);
+    } catch (err) {
+      toast("Échec de la création : " + err.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "＋ Créer le rendez-vous";
+    }
+  }
+
+  document.getElementById("booking-form").addEventListener("submit", createBooking);
 
   const gate = document.getElementById("gate");
   const app = document.getElementById("app");
@@ -325,15 +494,16 @@
         sessionStorage.removeItem(KEY_STORAGE);
         if (!fromStorage) gateError.textContent = "Mot de passe incorrect.";
       } else {
-        // Serveur injoignable (probablement en veille) : on affiche le tableau
-        // quand même avec un message d'attente, sans révéler si le mot de passe était bon.
         app.classList.remove("hidden");
         gate.classList.add("hidden");
         document.getElementById("banner").textContent =
           "⚠️ Impossible de joindre l'API pour l'instant (le serveur gratuit était peut-être en veille). Rechargez la page dans une minute.";
+        document.getElementById("banner").className = "banner err";
         document.getElementById("appointments-body").innerHTML =
-          '<tr><td colspan="4" class="empty">Données indisponibles.</td></tr>';
+          '<tr><td colspan="5" class="empty">Données indisponibles.</td></tr>';
         document.getElementById("reminders-list").innerHTML =
+          '<div class="empty">Données indisponibles.</div>';
+        document.getElementById("conversations-list").innerHTML =
           '<div class="empty">Données indisponibles.</div>';
       }
     }
@@ -343,6 +513,13 @@
     e.preventDefault();
     gateError.textContent = "";
     tryUnlock(gateInput.value);
+  });
+
+  document.getElementById("logout").addEventListener("click", () => {
+    sessionStorage.removeItem(KEY_STORAGE);
+    app.classList.add("hidden");
+    gate.classList.remove("hidden");
+    gateInput.value = "";
   });
 
   const storedKey = sessionStorage.getItem(KEY_STORAGE);
