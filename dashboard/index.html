@@ -292,7 +292,51 @@
       </div>
     </div>
   </div>
+
+  <div class="grid-main" style="margin-top:20px">
+    <div class="panel">
+      <h2>Disponibilités du cabinet</h2>
+      <p class="panel-sub">Les jours et heures où vous recevez. Modifiable à tout moment — le bot propose ces créneaux aux patients.</p>
+      <div id="hours-editor"></div>
+      <button class="btn-submit" id="save-hours" style="margin-top:14px">💾 Enregistrer les disponibilités</button>
+    </div>
+
+    <div class="panel">
+      <h2>Absences & blocages</h2>
+      <p class="panel-sub">Vacances, urgence, formation… ces créneaux ne seront plus proposés aux patients.</p>
+      <form id="blocked-form">
+        <div class="form-grid">
+          <div><label for="bl-start">Début</label><input id="bl-start" type="date" required></div>
+          <div><label for="bl-start-t">Heure</label><input id="bl-start-t" type="time" value="08:00" required></div>
+          <div><label for="bl-end">Fin</label><input id="bl-end" type="date" required></div>
+          <div><label for="bl-end-t">Heure</label><input id="bl-end-t" type="time" value="18:00" required></div>
+          <div class="full"><label for="bl-reason">Raison (facultatif)</label><input id="bl-reason" type="text" placeholder="Ex. Vacances, formation…"></div>
+        </div>
+        <button class="btn-submit" type="submit" style="background:var(--gold);color:var(--ink-deep,#102417)">＋ Bloquer ces créneaux</button>
+      </form>
+      <div class="list" id="blocked-list" style="margin-top:16px">
+        <div class="empty">Aucun blocage.</div>
+      </div>
+    </div>
+  </div>
 </main>
+</div>
+
+<!-- Modal déplacer un RDV -->
+<div class="gate hidden" id="move-modal" style="background:rgba(18,70,43,.4)">
+  <div class="gate-card">
+    <div class="mark">↔</div>
+    <h1>Déplacer le rendez-vous</h1>
+    <p id="move-patient" class="page-sub">Patient</p>
+    <form id="move-form">
+      <div class="form-grid">
+        <div><label for="mv-date">Nouvelle date</label><input id="mv-date" type="date" required></div>
+        <div><label for="mv-time">Heure</label><input id="mv-time" type="time" required></div>
+      </div>
+      <button class="btn-submit" type="submit" style="margin-top:12px">Déplacer le RDV</button>
+      <button type="button" class="btn-cancel" id="move-cancel" style="width:100%;margin-top:8px;padding:12px">Annuler</button>
+    </form>
+  </div>
 </div>
 
 <div class="toast-wrap" id="toast-wrap"></div>
@@ -382,13 +426,20 @@
       for (const a of appointments) {
         const tr = document.createElement("tr");
         const id = esc(a.appointment_id || "");
+        const actions = a.status === "confirmed" || a.status === "pending"
+          ? `<button class="btn-cancel" data-id="${id}" data-name="${esc(a.client_name)}">Annuler</button>
+             <button class="btn-move" data-id="${id}" data-name="${esc(a.client_name)}" style="margin-left:6px">Déplacer</button>`
+          : "";
         tr.innerHTML = `<td><b>${esc(a.client_name)}</b></td><td>${fmtDate(a.start_at)}</td><td>${fmtTime(a.start_at)}</td>
           <td><span class="status ${esc(a.status)}">${esc(STATUS_LABELS[a.status] || a.status)}</span></td>
-          <td style="text-align:right">${a.status === "confirmed" || a.status === "pending" ? `<button class="btn-cancel" data-id="${id}" data-name="${esc(a.client_name)}">Annuler</button>` : ""}</td>`;
+          <td style="text-align:right;white-space:nowrap">${actions}</td>`;
         body.appendChild(tr);
       }
       body.querySelectorAll(".btn-cancel").forEach(btn => {
         btn.addEventListener("click", () => cancelAppointment(btn.dataset.id, btn.dataset.name));
+      });
+      body.querySelectorAll(".btn-move").forEach(btn => {
+        btn.addEventListener("click", () => openMoveModal(btn.dataset.id, btn.dataset.name));
       });
     }
 
@@ -438,6 +489,197 @@
       toast("Échec de l'annulation : " + err.message, true);
     }
   }
+
+  // ===== Disponibilités & blocages =====
+  const DAYS = [
+    ["mon", "Lundi"], ["tue", "Mardi"], ["wed", "Mercredi"],
+    ["thu", "Jeudi"], ["fri", "Vendredi"], ["sat", "Samedi"], ["sun", "Dimanche"],
+  ];
+
+  function parseIso(iso) {
+    // Convention : une date sans fuseau = UTC (SQLite). On force Z pour un parse correct.
+    if (iso && !iso.endsWith("Z") && !iso.includes("+")) iso += "Z";
+    return new Date(iso);
+  }
+
+  function fmtDateTime(iso) {
+    const d = parseIso(iso);
+    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" })
+      + " " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function hoursEditorHtml(hours) {
+    let html = "";
+    for (const [key, label] of DAYS) {
+      const ranges = hours[key] || [];
+      const row = ranges.map((r, i) =>
+        `<input type="time" value="${r[0]}" data-day="${key}" data-idx="${i}" data-end="0" style="width:48%">
+         <input type="time" value="${r[1]}" data-day="${key}" data-idx="${i}" data-end="1" style="width:48%">`
+      ).join("");
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--sand)">
+        <b style="width:110px;font-size:.9rem">${label}</b>
+        <div style="flex:1;display:flex;gap:6px;flex-wrap:wrap" data-slots="${key}">
+          ${row || '<span class="empty" style="font-size:.8rem">Fermé</span>'}
+        </div>
+        <button type="button" class="btn-cancel" data-add="${key}" style="border-color:rgba(31,110,67,.4);color:var(--green)">+</button>
+        <button type="button" class="btn-cancel" data-del="${key}">−</button>
+      </div>`;
+    }
+    return html;
+  }
+
+  function collectHours() {
+    const hours = {};
+    for (const [key] of DAYS) {
+      const slots = [];
+      document.querySelectorAll(`input[data-day="${key}"]`).forEach(inp => {
+        const idx = +inp.dataset.idx;
+        if (!slots[idx]) slots[idx] = [];
+        slots[idx][+inp.dataset.end] = inp.value;
+      });
+      hours[key] = slots.filter(s => s[0] && s[1]);
+    }
+    return hours;
+  }
+
+  async function loadAvailability(key) {
+    const data = await authedFetch(`/public/dashboard/${TENANT_SLUG}/availability`, key);
+    document.getElementById("hours-editor").innerHTML = hoursEditorHtml(data.opening_hours || {});
+    const list = document.getElementById("blocked-list");
+    list.innerHTML = "";
+    const upcoming = (data.exceptions || []).filter(e => parseIso(e.end_at) > new Date());
+    if (upcoming.length === 0) {
+      list.innerHTML = '<div class="empty">Aucun blocage. 🎉</div>';
+    } else {
+      upcoming.sort((a, b) => parseIso(a.start_at) - parseIso(b.start_at));
+      for (const e of upcoming) {
+        const div = document.createElement("div");
+        div.className = "list-item";
+        div.innerHTML = `<div><div class="name">${esc(e.reason || "Blocage")}</div>
+          <div class="meta">${fmtDateTime(e.start_at)} → ${fmtDateTime(e.end_at)}</div></div>
+          <button class="btn-cancel" data-del-block="${esc(e.id)}">Supprimer</button>`;
+        list.appendChild(div);
+      }
+      list.querySelectorAll("[data-del-block]").forEach(b => {
+        b.addEventListener("click", () => deleteBlocked(b.dataset.delBlock));
+      });
+    }
+  }
+
+  async function saveHours() {
+    const key = sessionStorage.getItem(KEY_STORAGE);
+    const opening_hours = collectHours();
+    try {
+      await authedFetch(`/public/dashboard/${TENANT_SLUG}/availability/opening-hours`, key, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ opening_hours }),
+      });
+      toast("Disponibilités enregistrées — le bot propose ces créneaux.");
+      await loadAvailability(key);
+    } catch (err) {
+      toast("Échec : " + err.message, true);
+    }
+  }
+
+  async function createBlocked(e) {
+    e.preventDefault();
+    const key = sessionStorage.getItem(KEY_STORAGE);
+    const start = document.getElementById("bl-start").value;
+    const startT = document.getElementById("bl-start-t").value;
+    const end = document.getElementById("bl-end").value;
+    const endT = document.getElementById("bl-end-t").value;
+    const reason = document.getElementById("bl-reason").value.trim() || null;
+    if (!start || !end) { toast("Dates requises.", true); return; }
+    const payload = {
+      start_at: new Date(`${start}T${startT}`).toISOString(),
+      end_at: new Date(`${end}T${endT}`).toISOString(),
+      reason,
+    };
+    try {
+      await authedFetch(`/public/dashboard/${TENANT_SLUG}/availability/blocked`, key, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      toast("Créneaux bloqués.");
+      document.getElementById("blocked-form").reset();
+      await loadAvailability(key);
+    } catch (err) {
+      toast("Échec : " + err.message, true);
+    }
+  }
+
+  async function deleteBlocked(id) {
+    const key = sessionStorage.getItem(KEY_STORAGE);
+    if (!confirm("Supprimer ce blocage ? Le praticien redevient disponible.")) return;
+    try {
+      await authedFetch(`/public/dashboard/${TENANT_SLUG}/availability/blocked/${id}`, key, { method: "DELETE" });
+      toast("Blocage supprimé.");
+      await loadAvailability(key);
+    } catch (err) {
+      toast("Échec : " + err.message, true);
+    }
+  }
+
+  // ===== Déplacer un RDV =====
+  let moveTarget = null;
+
+  function openMoveModal(id, name) {
+    moveTarget = id;
+    document.getElementById("move-patient").textContent = `RDV de ${name}`;
+    document.getElementById("mv-date").value = "";
+    document.getElementById("mv-time").value = "";
+    document.getElementById("move-modal").classList.remove("hidden");
+  }
+
+  async function moveAppointment(e) {
+    e.preventDefault();
+    if (!moveTarget) return;
+    const key = sessionStorage.getItem(KEY_STORAGE);
+    const date = document.getElementById("mv-date").value;
+    const time = document.getElementById("mv-time").value;
+    if (!date || !time) { toast("Date et heure requises.", true); return; }
+    try {
+      await authedFetch(`/public/dashboard/${TENANT_SLUG}/appointments/${moveTarget}`, key, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ start_at: new Date(`${date}T${time}`).toISOString() }),
+      });
+      toast("RDV déplacé — rappels re-planifiés (24h/2h).");
+      document.getElementById("move-modal").classList.add("hidden");
+      await loadDashboard(key);
+    } catch (err) {
+      toast("Échec : " + err.message, true);
+    }
+  }
+
+  document.getElementById("save-hours").addEventListener("click", saveHours);
+  document.getElementById("blocked-form").addEventListener("submit", createBlocked);
+  document.getElementById("move-form").addEventListener("submit", moveAppointment);
+  document.getElementById("move-cancel").addEventListener("click", () => {
+    document.getElementById("move-modal").classList.add("hidden");
+  });
+  document.getElementById("hours-editor").addEventListener("click", (ev) => {
+    const add = ev.target.closest("[data-add]");
+    const del = ev.target.closest("[data-del]");
+    const key = add ? add.dataset.add : del ? del.dataset.del : null;
+    if (!key) return;
+    const wrap = document.querySelector(`[data-slots="${key}"]`);
+    if (add) {
+      const i = wrap.querySelectorAll("input").length / 2;
+      const html = `<input type="time" value="09:00" data-day="${key}" data-idx="${i}" data-end="0" style="width:48%">
+        <input type="time" value="12:00" data-day="${key}" data-idx="${i}" data-end="1" style="width:48%">`;
+      wrap.insertAdjacentHTML("beforeend", html);
+    } else if (del && wrap.querySelectorAll("input").length >= 2) {
+      const inputs = wrap.querySelectorAll("input");
+      inputs[inputs.length - 2].remove();
+      inputs[inputs.length - 1].remove();
+    }
+    if (wrap.querySelectorAll("input").length === 0) {
+      wrap.innerHTML = '<span class="empty" style="font-size:.8rem">Fermé</span>';
+    }
+  });
 
   async function createBooking(e) {
     e.preventDefault();
@@ -489,6 +731,11 @@
       sessionStorage.setItem(KEY_STORAGE, key);
       gate.classList.add("hidden");
       app.classList.remove("hidden");
+      // Chargement des disponibilités — jamais bloquant (anciens backends sans endpoint)
+      loadAvailability(key).catch(() => {
+        document.getElementById("hours-editor").innerHTML =
+          '<div class="empty">Disponibilités indisponibles sur cette version du serveur.</div>';
+      });
     } catch (err) {
       if (err.unauthorized) {
         sessionStorage.removeItem(KEY_STORAGE);
