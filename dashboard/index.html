@@ -192,6 +192,14 @@
         <div class="empty">Chargement…</div>
       </div>
     </div>
+
+    <div class="panel">
+      <h2>Conversations WhatsApp en cours</h2>
+      <p class="page-sub" style="margin-bottom:14px">Patients en train de prendre ou annuler un RDV sur WhatsApp.</p>
+      <div class="list" id="conversations-list">
+        <div class="empty">Chargement…</div>
+      </div>
+    </div>
   </div>
 </main>
 </div>
@@ -229,10 +237,11 @@
 
   async function loadDashboard(key) {
     const banner = document.getElementById("banner");
-    const [summary, appointments, reminders] = await Promise.all([
+    const [summary, appointments, reminders, conversations] = await Promise.all([
         authedFetch(`/public/dashboard/${TENANT_SLUG}/summary`, key),
         authedFetch(`/public/dashboard/${TENANT_SLUG}/appointments/upcoming`, key),
         authedFetch(`/public/dashboard/${TENANT_SLUG}/reminders/upcoming`, key),
+        authedFetch(`/public/dashboard/${TENANT_SLUG}/conversations`, key),
     ]);
 
     document.getElementById("kpi-today").textContent = summary.appointments_today;
@@ -269,6 +278,28 @@
             <div class="meta">RDV le ${fmtDate(r.send_at)} à ${fmtTime(r.send_at)}</div></div>
             <span class="tag">${r.type}</span>`;
           list.appendChild(div);
+        }
+      }
+
+      const convList = document.getElementById("conversations-list");
+      convList.innerHTML = "";
+      if (conversations.length === 0) {
+        convList.innerHTML = '<div class="empty">Aucune conversation en cours.</div>';
+      } else {
+        const STATE_LABELS = {
+          CHOOSING_DATE: { t: "Choisit un jour", c: "status pending" },
+          CHOOSING_SLOT: { t: "Choisit un créneau", c: "status pending" },
+          CONFIRMING: { t: "Confirme son RDV", c: "status confirmed" },
+          CANCELLING: { t: "Annule un RDV", c: "status cancelled" },
+        };
+        for (const c of conversations) {
+          const info = STATE_LABELS[c.state] || { t: c.context_summary || c.state, c: "status pending" };
+          const div = document.createElement("div");
+          div.className = "list-item";
+          div.innerHTML = `<div><div class="name">${c.client_name}</div>
+            <div class="meta">${info.t}</div></div>
+            <span class="status ${info.c.split(" ")[1]}">${info.t}</span>`;
+          convList.appendChild(div);
         }
       }
 
