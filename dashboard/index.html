@@ -170,11 +170,33 @@
   <div class="gate-card">
     <div class="mark">ك</div>
     <h1>Tableau de bord Kinayad</h1>
-    <p>Accès protégé — entrez le mot de passe pour continuer.</p>
-    <form id="gate-form">
-      <div class="gate-error" id="gate-error"></div>
-      <input type="password" id="gate-input" placeholder="Mot de passe" autocomplete="current-password" required>
-      <button type="submit">Accéder au tableau de bord</button>
+
+    <!-- Connexion -->
+    <form id="login-form">
+      <div class="gate-error" id="login-error"></div>
+      <p style="margin-bottom:16px">Connectez-vous à votre cabinet.</p>
+      <input type="email" id="login-email" placeholder="Email" autocomplete="email" required>
+      <input type="password" id="login-password" placeholder="Mot de passe" autocomplete="current-password" required>
+      <button type="submit">Se connecter</button>
+      <p class="form-note" style="margin-top:14px;font-size:.82rem;color:var(--ink-soft)">
+        Pas encore de compte ?
+        <a href="#" id="show-register" style="color:var(--green);font-weight:700">Créer mon cabinet →</a>
+      </p>
+    </form>
+
+    <!-- Inscription -->
+    <form id="register-form" class="hidden">
+      <div class="gate-error" id="register-error"></div>
+      <p style="margin-bottom:16px">Créez votre cabinet en 30 secondes.</p>
+      <input type="text" id="reg-cabinet" placeholder="Nom du cabinet" required>
+      <input type="text" id="reg-name" placeholder="Votre nom (Dr. …)" required>
+      <input type="email" id="reg-email" placeholder="Email" autocomplete="email" required>
+      <input type="password" id="reg-password" placeholder="Mot de passe (8 caractères min.)" autocomplete="new-password" required>
+      <button type="submit">Créer mon compte</button>
+      <p class="form-note" style="margin-top:14px;font-size:.82rem;color:var(--ink-soft)">
+        Déjà un compte ?
+        <a href="#" id="show-login" style="color:var(--green);font-weight:700">Se connecter →</a>
+      </p>
     </form>
   </div>
 </div>
@@ -343,8 +365,11 @@
 
 <script>
   const API_BASE = "https://kinayad-api.onrender.com";
-  const TENANT_SLUG = "cabinet-dr-hachmi-bouchaib";
-  const KEY_STORAGE = "kinayad_dashboard_key";
+  const DEFAULT_SLUG = "cabinet-dr-hachmi-bouchaib";
+  const KEY_STORAGE = "kinayad_dashboard_token";
+  const SLUG_STORAGE = "kinayad_tenant_slug";
+  // Le slug vient du compte connecté (chaque médecin voit SON cabinet)
+  function slug() { return sessionStorage.getItem(SLUG_STORAGE) || DEFAULT_SLUG; }
 
   const STATUS_LABELS = {
     pending: "En attente", confirmed: "Confirmé", rescheduled: "Reporté",
@@ -379,10 +404,10 @@
     setTimeout(() => el.remove(), 4100);
   }
 
-  async function authedFetch(path, key, options = {}) {
+  async function authedFetch(path, token, options = {}) {
     const r = await fetch(`${API_BASE}${path}`, {
       ...options,
-      headers: { "X-Dashboard-Key": key, ...(options.headers || {}) },
+      headers: { "Authorization": `Bearer ${token}`, ...(options.headers || {}) },
     });
     if (r.status === 401) {
       const err = new Error("unauthorized");
@@ -402,10 +427,10 @@
   async function loadDashboard(key) {
     const banner = document.getElementById("banner");
     const [summary, appointments, reminders, conversations] = await Promise.all([
-        authedFetch(`/public/dashboard/${TENANT_SLUG}/summary`, key),
-        authedFetch(`/public/dashboard/${TENANT_SLUG}/appointments/upcoming?limit=15`, key),
-        authedFetch(`/public/dashboard/${TENANT_SLUG}/reminders/upcoming`, key),
-        authedFetch(`/public/dashboard/${TENANT_SLUG}/conversations`, key),
+        authedFetch(`/public/dashboard/${slug()}/summary`, key),
+        authedFetch(`/public/dashboard/${slug()}/appointments/upcoming?limit=15`, key),
+        authedFetch(`/public/dashboard/${slug()}/reminders/upcoming`, key),
+        authedFetch(`/public/dashboard/${slug()}/conversations`, key),
     ]);
 
     document.getElementById("cabinet-name").textContent = summary.tenant_name;
@@ -482,7 +507,7 @@
     if (!id || !confirm(`Annuler le rendez-vous de ${name} ?\nLe patient ne recevra plus de rappel.`)) return;
     const key = sessionStorage.getItem(KEY_STORAGE);
     try {
-      await authedFetch(`/public/dashboard/${TENANT_SLUG}/appointments/${id}`, key, { method: "DELETE" });
+      await authedFetch(`/public/dashboard/${slug()}/appointments/${id}`, key, { method: "DELETE" });
       toast(`Rendez-vous de ${name} annulé.`);
       await loadDashboard(key);
     } catch (err) {
@@ -543,7 +568,7 @@
   }
 
   async function loadAvailability(key) {
-    const data = await authedFetch(`/public/dashboard/${TENANT_SLUG}/availability`, key);
+    const data = await authedFetch(`/public/dashboard/${slug()}/availability`, key);
     document.getElementById("hours-editor").innerHTML = hoursEditorHtml(data.opening_hours || {});
     const list = document.getElementById("blocked-list");
     list.innerHTML = "";
@@ -570,7 +595,7 @@
     const key = sessionStorage.getItem(KEY_STORAGE);
     const opening_hours = collectHours();
     try {
-      await authedFetch(`/public/dashboard/${TENANT_SLUG}/availability/opening-hours`, key, {
+      await authedFetch(`/public/dashboard/${slug()}/availability/opening-hours`, key, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ opening_hours }),
@@ -597,7 +622,7 @@
       reason,
     };
     try {
-      await authedFetch(`/public/dashboard/${TENANT_SLUG}/availability/blocked`, key, {
+      await authedFetch(`/public/dashboard/${slug()}/availability/blocked`, key, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -614,7 +639,7 @@
     const key = sessionStorage.getItem(KEY_STORAGE);
     if (!confirm("Supprimer ce blocage ? Le praticien redevient disponible.")) return;
     try {
-      await authedFetch(`/public/dashboard/${TENANT_SLUG}/availability/blocked/${id}`, key, { method: "DELETE" });
+      await authedFetch(`/public/dashboard/${slug()}/availability/blocked/${id}`, key, { method: "DELETE" });
       toast("Blocage supprimé.");
       await loadAvailability(key);
     } catch (err) {
@@ -641,7 +666,7 @@
     const time = document.getElementById("mv-time").value;
     if (!date || !time) { toast("Date et heure requises.", true); return; }
     try {
-      await authedFetch(`/public/dashboard/${TENANT_SLUG}/appointments/${moveTarget}`, key, {
+      await authedFetch(`/public/dashboard/${slug()}/appointments/${moveTarget}`, key, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ start_at: new Date(`${date}T${time}`).toISOString() }),
@@ -698,7 +723,7 @@
     btn.disabled = true;
     btn.textContent = "Création en cours…";
     try {
-      await authedFetch(`/public/dashboard/${TENANT_SLUG}/bookings`, key, {
+      await authedFetch(`/public/dashboard/${slug()}/bookings`, key, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -721,25 +746,58 @@
 
   const gate = document.getElementById("gate");
   const app = document.getElementById("app");
-  const gateForm = document.getElementById("gate-form");
-  const gateInput = document.getElementById("gate-input");
-  const gateError = document.getElementById("gate-error");
+  const loginForm = document.getElementById("login-form");
+  const registerForm = document.getElementById("register-form");
+  const loginError = document.getElementById("login-error");
+  const registerError = document.getElementById("register-error");
 
-  async function tryUnlock(key, { fromStorage } = {}) {
+  async function apiAuth(path, payload) {
+    const r = await fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const body = await r.json().catch(() => ({}));
+    return { status: r.status, body };
+  }
+
+  async function doLogin(email, password) {
+    const { status, body } = await apiAuth("/auth/login", { email, password });
+    if (status === 200) {
+      sessionStorage.setItem(KEY_STORAGE, body.token);
+      sessionStorage.setItem(SLUG_STORAGE, body.user.tenant_slug);
+      return;
+    }
+    if (status === 429) throw new Error("Trop de tentatives — réessayez dans une minute");
+    throw new Error(body.detail || "Email ou mot de passe incorrect");
+  }
+
+  async function doRegister(cabinet, name, email, password) {
+    const { status, body } = await apiAuth("/auth/register", {
+      cabinet_name: cabinet, practitioner_name: name, email, password,
+    });
+    if (status === 200) {
+      sessionStorage.setItem(KEY_STORAGE, body.token);
+      sessionStorage.setItem(SLUG_STORAGE, body.user.tenant_slug);
+      return;
+    }
+    throw new Error(body.detail || "Inscription impossible");
+  }
+
+  async function enterDashboard(token, { fromStorage } = {}) {
     try {
-      await loadDashboard(key);
-      sessionStorage.setItem(KEY_STORAGE, key);
+      await loadDashboard(token);
       gate.classList.add("hidden");
       app.classList.remove("hidden");
       // Chargement des disponibilités — jamais bloquant (anciens backends sans endpoint)
-      loadAvailability(key).catch(() => {
+      loadAvailability(token).catch(() => {
         document.getElementById("hours-editor").innerHTML =
           '<div class="empty">Disponibilités indisponibles sur cette version du serveur.</div>';
       });
     } catch (err) {
       if (err.unauthorized) {
         sessionStorage.removeItem(KEY_STORAGE);
-        if (!fromStorage) gateError.textContent = "Mot de passe incorrect.";
+        if (!fromStorage) loginError.textContent = "Email ou mot de passe incorrect.";
       } else {
         app.classList.remove("hidden");
         gate.classList.add("hidden");
@@ -756,22 +814,63 @@
     }
   }
 
-  gateForm.addEventListener("submit", (e) => {
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    gateError.textContent = "";
-    tryUnlock(gateInput.value);
+    loginError.textContent = "";
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
+    try {
+      await doLogin(email, password);
+      enterDashboard(sessionStorage.getItem(KEY_STORAGE));
+    } catch (err) {
+      loginError.textContent = err.message;
+    }
+  });
+
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    registerError.textContent = "";
+    const cabinet = document.getElementById("reg-cabinet").value.trim();
+    const name = document.getElementById("reg-name").value.trim();
+    const email = document.getElementById("reg-email").value.trim();
+    const password = document.getElementById("reg-password").value;
+    try {
+      await doRegister(cabinet, name, email, password);
+      enterDashboard(sessionStorage.getItem(KEY_STORAGE));
+    } catch (err) {
+      registerError.textContent = err.message;
+    }
+  });
+
+  document.getElementById("show-register").addEventListener("click", (e) => {
+    e.preventDefault();
+    loginForm.classList.add("hidden");
+    registerForm.classList.remove("hidden");
+    loginError.textContent = "";
+  });
+  document.getElementById("show-login").addEventListener("click", (e) => {
+    e.preventDefault();
+    registerForm.classList.add("hidden");
+    loginForm.classList.remove("hidden");
+    registerError.textContent = "";
   });
 
   document.getElementById("logout").addEventListener("click", () => {
+    const token = sessionStorage.getItem(KEY_STORAGE);
+    if (token) fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` },
+    }).catch(() => {});
     sessionStorage.removeItem(KEY_STORAGE);
+    sessionStorage.removeItem(SLUG_STORAGE);
     app.classList.add("hidden");
     gate.classList.remove("hidden");
-    gateInput.value = "";
+    document.getElementById("login-password").value = "";
   });
 
-  const storedKey = sessionStorage.getItem(KEY_STORAGE);
-  if (storedKey) {
-    tryUnlock(storedKey, { fromStorage: true });
+  const storedToken = sessionStorage.getItem(KEY_STORAGE);
+  if (storedToken) {
+    enterDashboard(storedToken, { fromStorage: true });
   }
 </script>
 
