@@ -318,7 +318,11 @@
   <div class="grid-main" style="margin-top:20px">
     <div class="panel">
       <h2>Disponibilités du cabinet</h2>
-      <p class="panel-sub">Les jours et heures où vous recevez. Modifiable à tout moment — le bot propose ces créneaux aux patients.</p>
+      <p class="panel-sub">Les jours et heures où vous recevez, et l'adresse affichée aux patients dans « Horaires » et « Contacter ».</p>
+      <div style="margin-bottom:14px">
+        <label for="cabinet-address">Adresse du cabinet</label>
+        <input id="cabinet-address" type="text" placeholder="Ex. 12 Avenue Hassan II, Casablanca">
+      </div>
       <div id="hours-editor"></div>
       <button class="btn-submit" id="save-hours" style="margin-top:14px">💾 Enregistrer les disponibilités</button>
     </div>
@@ -569,6 +573,7 @@
 
   async function loadAvailability(key) {
     const data = await authedFetch(`/public/dashboard/${slug()}/availability`, key);
+    document.getElementById("cabinet-address").value = data.address || "";
     document.getElementById("hours-editor").innerHTML = hoursEditorHtml(data.opening_hours || {});
     const list = document.getElementById("blocked-list");
     list.innerHTML = "";
@@ -594,13 +599,19 @@
   async function saveHours() {
     const key = sessionStorage.getItem(KEY_STORAGE);
     const opening_hours = collectHours();
+    const address = document.getElementById("cabinet-address").value.trim();
     try {
       await authedFetch(`/public/dashboard/${slug()}/availability/opening-hours`, key, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ opening_hours }),
       });
-      toast("Disponibilités enregistrées — le bot propose ces créneaux.");
+      await authedFetch(`/public/dashboard/${slug()}/address`, key, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: address || null }),
+      });
+      toast("Disponibilités et adresse enregistrées — le bot les affiche aux patients.");
       await loadAvailability(key);
     } catch (err) {
       toast("Échec : " + err.message, true);
