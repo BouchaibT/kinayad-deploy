@@ -24,7 +24,5 @@ praticien + landing page.
 - Auth (connexion/inscription, fin du mot de passe global) : **FAIT** — PR #1
   mergée et déployée avec la PR #5 backend le 30/08. Isolation vérifiée en
   vraie prod (navigateur réel, deux cabinets distincts).
-- Adresse du cabinet : retirée de la PR auth (endpoint backend absent à
-  l'époque). L'endpoint existe désormais côté backend (branche
-  `feat/adresse-cabinet`, non encore mergée) — le champ frontend reviendra en
-  PR séparée une fois le backend mergé.
+- Adresse du cabinet : **FAIT** — backend mergé (PR #8) et frontend mergé
+  (`2e6f6e4`), champ « Adresse du cabinet » déployé en prod sur Vercel.
